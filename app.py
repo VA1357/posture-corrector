@@ -1,19 +1,15 @@
-#posture-corrector/app.py
+# posture-corrector/app.py
 
-import logging
 import time
 import edgeiq
 import os
 import json
 from posture import CheckPosture
-import numpy as np
 
 """
 Modifies realtime_pose_estimator to detect whether a person is exhibiting
 improper posture (as defined in CheckPosture).
-
 Proper posture functions are defined in the 'CheckPosture' class and imported.
-
 This app uses a configuration file (config.json) to configure a
 'scale' factor, which is used to make the posture calculations more or less stringent.
 A larger scale factor (>1) makes the calculation less stringent (allows for less straight
@@ -21,6 +17,7 @@ posture).
 """
 CONFIG_FILE = "config.json"
 SCALE = "scale"
+
 
 def load_json(filepath):
     # check that the file exists and return the loaded json data
@@ -30,6 +27,7 @@ def load_json(filepath):
     with open(filepath) as data:
         return json.load(data)
 
+
 def main():
     # load the configuration data from config.json
     config = load_json(CONFIG_FILE)
@@ -38,8 +36,8 @@ def main():
     pose_estimator = edgeiq.PoseEstimation("alwaysai/human-pose")
 
     pose_estimator.load(
-            engine=edgeiq.Engine.DNN,
-            accelerator=edgeiq.Accelerator.CPU)
+        engine=edgeiq.Engine.DNN,
+        accelerator=edgeiq.Accelerator.CPU)
 
     print("Loaded model:\n{}\n".format(pose_estimator.model_id))
     print("Engine: {}".format(pose_estimator.engine))
@@ -51,7 +49,7 @@ def main():
         with edgeiq.WebcamVideoStream(cam=0) as video_stream, \
                 edgeiq.Streamer() as streamer:
             # Allow Webcam to warm up
-            time.sleep(2.0)
+            time.sleep(5.0)
             fps.start()
 
             posture = CheckPosture(scale)
@@ -63,10 +61,10 @@ def main():
                 # Generate text to display on streamer
                 text = ["Model: {}".format(pose_estimator.model_id)]
                 text.append(
-                        "Inference time: {:1.3f} s".format(results.duration))
+                    "Inference time: {:1.3f} s".format(results.duration))
                 for ind, pose in enumerate(results.poses):
                     text.append("Person {}".format(ind))
-                    text.append('-'*10)
+                    text.append('-' * 10)
                     text.append("Key Points:")
 
                     # update the instance key_points to check the posture
@@ -75,7 +73,7 @@ def main():
                     correct_posture = posture.correct_posture()
                     if not correct_posture:
                         text.append(posture.build_message())
-                        
+
                         # make a sound to alert the user to improper posture
                         print("\a")
 

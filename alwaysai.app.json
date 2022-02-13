@@ -3,6 +3,7 @@
     "start": "python app.py"
   },
   "models": {
+    "alwaysai/res10_300x300_ssd_iter_140000": 7,
     "alwaysai/human-pose": 7
   }
 }
